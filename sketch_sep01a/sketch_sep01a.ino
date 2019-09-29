@@ -1,26 +1,26 @@
- /*
- Controlling large 7-segment displays
- By: Nathan Seidle
- SparkFun Electronics
- Date: February 25th, 2015
- License: This code is public domain but you buy me a beer if you use this and we meet someday (Beerware license).
+/*
+  Controlling large 7-segment displays
+  By: Nathan Seidle
+  SparkFun Electronics
+  Date: February 25th, 2015
+  License: This code is public domain but you buy me a beer if you use this and we meet someday (Beerware license).
 
- This code demonstrates how to post two numbers to a 2-digit display usings two large digit driver boards.
+  This code demonstrates how to post two numbers to a 2-digit display usings two large digit driver boards.
 
- Here's how to hook up the Arduino pins to the Large Digit Driver IN
+  Here's how to hook up the Arduino pins to the Large Digit Driver IN
 
- Arduino pin 6 -> CLK (Green on the 6-pin cable)
- 5 -> LAT (Blue)
- 7 -> SER on the IN side (Yellow)
- 5V -> 5V (Orange)
- Power Arduino with 12V and connect to Vin -> 12V (Red)
- GND -> GND (Black)
+  Arduino pin 6 -> CLK (Green on the 6-pin cable)
+  5 -> LAT (Blue)
+  7 -> SER on the IN side (Yellow)
+  5V -> 5V (Orange)
+  Power Arduino with 12V and connect to Vin -> 12V (Red)
+  GND -> GND (Black)
 
- There are two connectors on the Large Digit Driver. 'IN' is the input side that should be connected to
- your microcontroller (the Arduino). 'OUT' is the output side that should be connected to the 'IN' of addtional
- digits.
+  There are two connectors on the Large Digit Driver. 'IN' is the input side that should be connected to
+  your microcontroller (the Arduino). 'OUT' is the output side that should be connected to the 'IN' of addtional
+  digits.
 
- Each display will use about 150mA with all segments and decimal point on.
+  Each display will use about 150mA with all segments and decimal point on.
 
 */
 
@@ -51,30 +51,32 @@ int number = 0;
 long steps = 0;
 void loop()
 {
-  if(Serial.available()){
+  if (Serial.available()) {
     steps = 0;
     char c = Serial.read();
-    if(c == 'S'){
-      while(Serial.available()){
-        c = Serial.read();
-        steps = (steps * 10) + (c - '0');
+    if (c == 'S') {
+      while (Serial.available()) {
+        steps = Serial.parseInt(SKIP_ALL);
       }
       Serial.println(steps);
       showNumber(steps);
     }
   }
-  
+
 }
 
 //Takes a number and displays 5 numbers. Displays absolute value (no negatives)
 void showNumber(long value)
 {
+  int digits = 5;
   long number = abs(value); //Remove negative signs and any decimals
 
   //Serial.print("number: ");
   //Serial.println(number);
-
-  for (byte x = 0 ; x < 5 ; x++)
+  if(value < 0 && value > -10000){
+    digits = 4;
+  }
+  for (byte x = 0 ; x < digits; x++)
   {
     int remainder = number % 10;
 
@@ -82,6 +84,13 @@ void showNumber(long value)
 
     number /= 10;
   }
+
+  if(value < 0 && value > -10000){
+    postNumber('-', false);
+  }
+
+
+
 
   //Latch the current segment data
   digitalWrite(segmentLatch, LOW);
